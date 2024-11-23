@@ -28,11 +28,27 @@ public class Main {
 
         if (programType.equals("server")) {
 
-            application = new ServerApplication();
+            if (args.length < 2) {
+                logIncorrectUsage();
+                return;
+            }
+
+            String port = args[1];
+
+            application = new ServerApplication(port);
+
 
         } else if (programType.equals("client")) {
 
-            application = new ClientApplication();
+            if (args.length < 3) {
+                logIncorrectUsage();
+                return;
+            }
+
+            String ip = args[1];
+            String port = args[2];
+
+            application = new ClientApplication(ip, port);
 
         } else {
 
@@ -59,10 +75,13 @@ public class Main {
     }
 
 
+    @SuppressWarnings("unused")
     public static Logger getLogger() {
         return LOGGER;
     }
 
+
+    @SuppressWarnings("unused")
     public static Application getApplication() {
         return application;
     }
