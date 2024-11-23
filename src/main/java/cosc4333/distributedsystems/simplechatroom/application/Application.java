@@ -7,17 +7,22 @@ public abstract class Application {
     private AtomicBoolean running = new AtomicBoolean(false);
 
     protected abstract void loop();
+    protected abstract void onApplicationStopped();
+    protected abstract void onApplicationStarted();
 
     // start program
     // RUN ON MAIN THREAD
     public void start() {
-        running.set(true);
 
-        while (running.get()) {
+        running.set(true);
+        onApplicationStarted();
+
+        while (isRunning()) {
 
             loop();
 
         }
+        onApplicationStopped();
     }
 
     // stop program
@@ -25,5 +30,10 @@ public abstract class Application {
     public void stop() {
         running.set(false);
     }
+
+    public boolean isRunning() {
+        return running.get();
+    }
+
 
 }

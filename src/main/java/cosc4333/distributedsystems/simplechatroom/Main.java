@@ -1,14 +1,14 @@
 package cosc4333.distributedsystems.simplechatroom;
 
 import cosc4333.distributedsystems.simplechatroom.application.Application;
-import cosc4333.distributedsystems.simplechatroom.application.ClientApplication;
-import cosc4333.distributedsystems.simplechatroom.application.ServerApplication;
+import cosc4333.distributedsystems.simplechatroom.application.client.ClientApplication;
+import cosc4333.distributedsystems.simplechatroom.application.server.ServerApplication;
 
 import java.util.logging.Logger;
 
 public class Main {
 
-
+    private static final Thread MAIN_THREAD = Thread.currentThread();
     private static final Logger LOGGER = Logger.getLogger("Main Logger");
     private static Application application;
 
@@ -75,7 +75,6 @@ public class Main {
     }
 
 
-    @SuppressWarnings("unused")
     public static Logger getLogger() {
         return LOGGER;
     }
@@ -84,5 +83,9 @@ public class Main {
     @SuppressWarnings("unused")
     public static Application getApplication() {
         return application;
+    }
+
+    public static Thread getMainThread() {
+        return MAIN_THREAD;
     }
 }
