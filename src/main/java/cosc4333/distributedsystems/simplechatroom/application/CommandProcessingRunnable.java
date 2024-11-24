@@ -1,6 +1,8 @@
 package cosc4333.distributedsystems.simplechatroom.application;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
+import cosc4333.distributedsystems.simplechatroom.application.client.ClientApplication;
+import cosc4333.distributedsystems.simplechatroom.application.server.ServerApplication;
 
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,11 +20,22 @@ public class CommandProcessingRunnable implements Runnable {
         String commandName = commandArray[0];
 
         switch (commandName) {
-            case "stop" -> {
+            case "stop", "close", "quit", "exit" -> {
                 stop();
                 Main.getApplication().stop();
             }
             default -> {
+
+                if (Main.getApplication() instanceof ClientApplication clientApplication) {
+
+                    clientApplication.processCommand(commandArray);
+
+                } else if (Main.getApplication() instanceof ServerApplication serverApplication) {
+
+                    serverApplication.processCommand(commandArray);
+
+                }
+
             }
         }
 

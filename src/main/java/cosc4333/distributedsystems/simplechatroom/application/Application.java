@@ -13,9 +13,18 @@ public abstract class Application {
     private final CommandProcessingRunnable COMMAND_RUNNABLE;
     private final Thread COMMAND_THREAD;
 
+    // called every loop iteration while the server is active and running
     protected abstract void loop();
+
+    // called after the application stops
     protected abstract void onApplicationStopped();
+
+    // called when the application starts
     protected abstract void onApplicationStarted();
+
+    // processes a user-inputted command
+    // MUST CALL ON COMMAND THREAD
+    public abstract void processCommand(String[] commandArray);
 
     public Application() {
 

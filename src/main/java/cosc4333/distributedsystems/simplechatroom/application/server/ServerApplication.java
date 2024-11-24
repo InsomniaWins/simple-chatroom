@@ -17,7 +17,7 @@ public class ServerApplication extends Application {
 
     public ServerApplication(String port) {
 
-        System.out.println("Starting server on port: " + port + " . . .");
+        Main.getLogger().info("Starting server on port: " + port + " . . .");
 
         int portInt = Integer.parseInt(port);
 
@@ -44,6 +44,7 @@ public class ServerApplication extends Application {
     protected void loop() {
 
 
+
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ServerApplication extends Application {
         }
 
         // finished closing server
-        System.out.println("Server closed.");
+        Main.getLogger().info("Server closed.");
 
     }
 
@@ -69,6 +70,11 @@ public class ServerApplication extends Application {
 
 
 
+
+    }
+
+    @Override
+    public void processCommand(String[] commandArray) {
 
     }
 }
