@@ -11,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerApplication extends Application {
 
     private final ConcurrentHashMap<Integer, ClientInformation> CLIENTS;
-
     private final Thread SERVER_CONNECTIONS_THREAD;
     private final ServerConnectionsRunnable SERVER_CONNECTIONS_RUNNABLE;
+    private final ServerSocket SERVER_SOCKET;
 
     public ServerApplication(String port) {
 
@@ -21,10 +21,9 @@ public class ServerApplication extends Application {
 
         int portInt = Integer.parseInt(port);
 
-        ServerSocket serverSocket = null;
         try {
 
-            serverSocket = new ServerSocket(portInt);
+            SERVER_SOCKET = new ServerSocket(portInt);
 
         } catch (IOException e) {
             Main.getLogger().severe("Failed to start server!");
@@ -35,7 +34,7 @@ public class ServerApplication extends Application {
 
         // begin thread which handles connections to server
         // on separate thread to prevent blocking the main thread when waiting for connections
-        SERVER_CONNECTIONS_RUNNABLE = new ServerConnectionsRunnable(this, serverSocket);
+        SERVER_CONNECTIONS_RUNNABLE = new ServerConnectionsRunnable(this, SERVER_SOCKET);
         SERVER_CONNECTIONS_THREAD = new Thread(SERVER_CONNECTIONS_RUNNABLE);
         SERVER_CONNECTIONS_THREAD.setName("Server-Network");
         SERVER_CONNECTIONS_THREAD.start();
@@ -49,6 +48,19 @@ public class ServerApplication extends Application {
 
     @Override
     protected void onApplicationStopped() {
+
+        // tell server to stop listening for connections
+        SERVER_CONNECTIONS_RUNNABLE.stop();
+
+        // interrupt current listening (the server is currently listening for a connection, so tell it to stop)
+        try {
+            SERVER_SOCKET.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // finished closing server
+        System.out.println("Server closed.");
 
     }
 
