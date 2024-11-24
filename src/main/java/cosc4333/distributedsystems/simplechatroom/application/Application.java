@@ -40,6 +40,12 @@ public abstract class Application {
     // RUN ON MAIN THREAD
     public void start() {
 
+        // make sure "stop" method is executed when program is closed
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            stop();
+            onApplicationStopped();
+        }));
+
         RUNNING.set(true);
         COMMAND_THREAD.start();
         onApplicationStarted();
@@ -58,11 +64,13 @@ public abstract class Application {
     // stop program
     // Thread-Safe :)
     public void stop() {
+
         RUNNING.set(false);
 
         if (COMMAND_THREAD.isAlive()) {
             COMMAND_RUNNABLE.stop();
         }
+
     }
 
     public boolean isRunning() {
