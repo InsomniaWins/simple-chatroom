@@ -1,6 +1,7 @@
 package cosc4333.distributedsystems.simplechatroom.application.network.io;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
+import cosc4333.distributedsystems.simplechatroom.application.Application;
 import cosc4333.distributedsystems.simplechatroom.application.network.NetworkRunnable;
 import cosc4333.distributedsystems.simplechatroom.application.server.ServerApplication;
 
@@ -45,13 +46,15 @@ public class InputNetworkRunnable extends NetworkRunnable {
             // socket could not send data because socket is now closed
             if (input == null) {
 
-                ServerApplication serverApplication = (ServerApplication) Main.getApplication();
+                Application application = Main.getApplication();
                 stop();
-                serverApplication.queueMainThreadInstruction(() -> {
-                    serverApplication.onClientDisconnected(SOCKET);
+                application.queueMainThreadInstruction(() -> {
+                    application.onSocketDisconnected(SOCKET);
                 });
 
             }
+
+            System.out.println("Got input: " + input);
 
         }
 

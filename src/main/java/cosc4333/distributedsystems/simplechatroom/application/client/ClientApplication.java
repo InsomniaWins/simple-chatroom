@@ -2,22 +2,24 @@ package cosc4333.distributedsystems.simplechatroom.application.client;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.Application;
+import cosc4333.distributedsystems.simplechatroom.application.network.client.ServerInformation;
+
 import java.net.Socket;
 
 public class ClientApplication extends Application {
 
-    private Socket clientSocket;
     private final Thread CLIENT_CONNECTION_THREAD;
     private final ClientConnectionRunnable CLIENT_CONNECTION_RUNNABLE;
+
+    private ServerInformation serverInformation;
 
     public ClientApplication(String ip, String port) {
 
         Main.getLogger().info("Starting client on ip: " + ip + " and port: " + port + " . . .");
 
-        CLIENT_CONNECTION_RUNNABLE = new ClientConnectionRunnable(ip, Integer.parseInt(port));
+        CLIENT_CONNECTION_RUNNABLE = new ClientConnectionRunnable(this, ip, Integer.parseInt(port));
         CLIENT_CONNECTION_THREAD = new Thread(CLIENT_CONNECTION_RUNNABLE);
         CLIENT_CONNECTION_THREAD.setName("Client-Network");
-
 
     }
 
@@ -97,8 +99,23 @@ public class ClientApplication extends Application {
 
     // NOT THREAD SAFE (yet)
     public boolean isClientConnected() {
-        Socket clientSocket = CLIENT_CONNECTION_RUNNABLE.getClientSocket();
+        Socket clientSocket = CLIENT_CONNECTION_RUNNABLE.getServerSocket();
         return clientSocket != null && clientSocket.isConnected() && !clientSocket.isClosed();
     }
 
+    public ServerInformation getServerInformation() {
+        return serverInformation;
+    }
+
+    public void setServerInformation(ServerInformation serverInformation) {
+        this.serverInformation = serverInformation;
+    }
+
+    @Override
+    public void onSocketDisconnected(Socket socket) {
+
+        CLIENT_CONNECTION_RUNNABLE.onServerDisconnected(socket);
+        Main.getLogger().info("Server disconnected: " + socket);
+
+    }
 }

@@ -129,14 +129,11 @@ public class ServerApplication extends Application {
 
     }
 
-    // called on main thread when client socket could no longer be read from
-    // MUST BE CALLED ON MAIN THREAD
-    public void onClientDisconnected(Socket clientSocket) {
+    @Override
+    public void onSocketDisconnected(Socket socket) {
 
-        SERVER_CONNECTIONS_RUNNABLE.onClientDisconnected(clientSocket);
-        Main.getLogger().info("Client disconnected: " + clientSocket);
+        SERVER_CONNECTIONS_RUNNABLE.onClientDisconnected(socket);
+        Main.getLogger().info("Client disconnected: " + socket);
 
     }
-
-
 }

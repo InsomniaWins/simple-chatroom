@@ -1,5 +1,9 @@
 package cosc4333.distributedsystems.simplechatroom.application;
 
+import cosc4333.distributedsystems.simplechatroom.Main;
+import cosc4333.distributedsystems.simplechatroom.application.server.ServerApplication;
+
+import java.net.Socket;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -93,4 +97,12 @@ public abstract class Application {
         MAIN_THREAD_INSTRUCTION_QUEUE.offer(instruction);
     }
 
+
+    // called on main thread when socket could no longer be read from
+    // MUST BE CALLED ON MAIN THREAD
+    public void onSocketDisconnected(Socket socket) {
+
+
+
+    }
 }
