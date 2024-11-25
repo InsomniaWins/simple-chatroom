@@ -1,7 +1,9 @@
 package cosc4333.distributedsystems.simplechatroom.application.server;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
-import cosc4333.distributedsystems.simplechatroom.network.server.ClientInformation;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.InputNetworkRunnable;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.OutputNetworkRunnable;
+import cosc4333.distributedsystems.simplechatroom.application.network.server.ClientInformation;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -43,8 +45,8 @@ public class ServerConnectionsRunnable implements Runnable {
 
                 Main.getLogger().info("Client connected: " + clientSocket);
 
-                ServerOutputRunnable outputRunnable = new ServerOutputRunnable(clientSocket);
-                ServerInputRunnable inputRunnable = new ServerInputRunnable(clientSocket);
+                OutputNetworkRunnable outputRunnable = new OutputNetworkRunnable(clientSocket);
+                InputNetworkRunnable inputRunnable = new InputNetworkRunnable(clientSocket);
 
                 serverApplication.setClient(clientSocket.getPort(),
                         new ClientInformation(clientSocket, inputRunnable, outputRunnable)
@@ -100,18 +102,26 @@ public class ServerConnectionsRunnable implements Runnable {
             return;
         }
 
-        ServerOutputRunnable outputRunnable = clientInformation.getOutputRunnable();
-        ServerInputRunnable inputRunnable = clientInformation.getInputRunnable();
 
         // make sure input is stopped
+
+        InputNetworkRunnable inputRunnable = clientInformation.getInputRunnable();
+
         if (inputRunnable != null && inputRunnable.isRunning()) {
             inputRunnable.stop();
         }
 
+
+
         // stop output runnable
+
+        OutputNetworkRunnable outputRunnable = clientInformation.getOutputRunnable();
+
         if (outputRunnable != null && outputRunnable.isRunning()) {
             outputRunnable.stop();
         }
+
+
 
         // remove client information from server
         serverApplication.removeClientInformation(clientSocket.getPort());

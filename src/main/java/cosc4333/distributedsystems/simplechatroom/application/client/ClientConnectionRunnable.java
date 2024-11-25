@@ -64,6 +64,9 @@ public class ClientConnectionRunnable implements Runnable {
             clientSocket = new Socket(IP, PORT);
             Main.getLogger().info("Connected to server!");
 
+
+
+
         } catch (IOException e) {
 
             Main.getLogger().severe("Failed to connect to server!\nPlease run \"connect\" to retry connection.");

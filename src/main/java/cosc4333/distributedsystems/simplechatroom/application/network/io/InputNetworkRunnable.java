@@ -1,41 +1,35 @@
-package cosc4333.distributedsystems.simplechatroom.application.server;
+package cosc4333.distributedsystems.simplechatroom.application.network.io;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
+import cosc4333.distributedsystems.simplechatroom.application.network.NetworkRunnable;
+import cosc4333.distributedsystems.simplechatroom.application.server.ServerApplication;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ServerInputRunnable implements Runnable {
+public class InputNetworkRunnable extends NetworkRunnable {
 
-    private final AtomicBoolean RUNNING = new AtomicBoolean(false);
-    private final Socket CLIENT_SOCKET;
     private final BufferedReader INPUT_READER;
 
+    public InputNetworkRunnable(Socket socket) {
+        super(socket);
 
-    public ServerInputRunnable(Socket clientSocket) {
-
-        CLIENT_SOCKET = clientSocket;
-
-        // make output buffer
+        // make input buffer
         try {
-            INPUT_READER = new BufferedReader(new InputStreamReader(CLIENT_SOCKET.getInputStream()));
+            INPUT_READER = new BufferedReader(new InputStreamReader(SOCKET.getInputStream()));
         } catch (IOException e) {
-            Main.getLogger().severe("Failed to get input stream for client: " + CLIENT_SOCKET);
+            Main.getLogger().severe("Failed to get input stream for socket: " + SOCKET);
             throw new RuntimeException(e);
         }
 
         RUNNING.set(true);
     }
 
+
     @Override
     public void run() {
-
         while (Main.getApplication().isRunning() && isRunning() ) {
 
             String input = null;
@@ -43,7 +37,7 @@ public class ServerInputRunnable implements Runnable {
             try {
                 input = INPUT_READER.readLine();
             } catch (IOException e) {
-                Main.getLogger().severe("Failed to get input from input reader of client: " + CLIENT_SOCKET +
+                Main.getLogger().severe("Failed to get input from input reader of socket: " + SOCKET +
                         e.toString());
                 continue;
             }
@@ -54,7 +48,7 @@ public class ServerInputRunnable implements Runnable {
                 ServerApplication serverApplication = (ServerApplication) Main.getApplication();
                 stop();
                 serverApplication.queueMainThreadInstruction(() -> {
-                    serverApplication.onClientDisconnected(CLIENT_SOCKET);
+                    serverApplication.onClientDisconnected(SOCKET);
                 });
 
             }
@@ -64,20 +58,8 @@ public class ServerInputRunnable implements Runnable {
         try {
             INPUT_READER.close();
         } catch (IOException e) {
-            Main.getLogger().severe("Failed to close input stream for client: " + CLIENT_SOCKET);
+            Main.getLogger().severe("Failed to close input stream for socket: " + SOCKET);
             throw new RuntimeException(e);
         }
-
     }
-
-    // thread-safe
-    public boolean isRunning() {
-        return RUNNING.get();
-    }
-
-    // thread-safe
-    public void stop() {
-        RUNNING.set(false);
-    }
-
 }

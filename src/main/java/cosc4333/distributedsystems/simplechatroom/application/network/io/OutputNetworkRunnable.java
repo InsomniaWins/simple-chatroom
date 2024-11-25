@@ -1,31 +1,27 @@
-package cosc4333.distributedsystems.simplechatroom.application.server;
+package cosc4333.distributedsystems.simplechatroom.application.network.io;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
+import cosc4333.distributedsystems.simplechatroom.application.network.NetworkRunnable;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ServerOutputRunnable implements Runnable {
+public class OutputNetworkRunnable extends NetworkRunnable {
 
-    private final AtomicBoolean RUNNING = new AtomicBoolean(false);
     private final ConcurrentLinkedQueue<String> OUTPUT_QUEUE = new ConcurrentLinkedQueue<>();
-    private final Socket CLIENT_SOCKET;
     private final PrintWriter OUTPUT_WRITER;
 
-
-    public ServerOutputRunnable(Socket clientSocket) {
-
-        CLIENT_SOCKET = clientSocket;
+    public OutputNetworkRunnable(Socket socket) {
+        super(socket);
 
         // make output buffer
         try {
-            OUTPUT_WRITER = new PrintWriter(CLIENT_SOCKET.getOutputStream(), true);
+            OUTPUT_WRITER = new PrintWriter(SOCKET.getOutputStream(), true);
         } catch (IOException e) {
-            Main.getLogger().severe("Failed to get output stream for client: " + CLIENT_SOCKET);
+            Main.getLogger().severe("Failed to get output stream for socket: " + SOCKET);
             throw new RuntimeException(e);
         }
 
@@ -51,17 +47,7 @@ public class ServerOutputRunnable implements Runnable {
         OUTPUT_WRITER.close();
     }
 
-    // thread-safe
-    public boolean isRunning() {
-        return RUNNING.get();
-    }
-
-    // thread-safe
-    public void stop() {
-        RUNNING.set(false);
-    }
-
-    // queues a string message to be sent to the client socket
+    // queues a string message to be sent to the socket
     // thread-safe :)
     public void queueMessage(String message) {
 

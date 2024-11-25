@@ -2,7 +2,7 @@ package cosc4333.distributedsystems.simplechatroom.application.server;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.Application;
-import cosc4333.distributedsystems.simplechatroom.network.server.ClientInformation;
+import cosc4333.distributedsystems.simplechatroom.application.network.server.ClientInformation;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -131,7 +131,7 @@ public class ServerApplication extends Application {
 
     // called on main thread when client socket could no longer be read from
     // MUST BE CALLED ON MAIN THREAD
-    protected void onClientDisconnected(Socket clientSocket) {
+    public void onClientDisconnected(Socket clientSocket) {
 
         SERVER_CONNECTIONS_RUNNABLE.onClientDisconnected(clientSocket);
         Main.getLogger().info("Client disconnected: " + clientSocket);
