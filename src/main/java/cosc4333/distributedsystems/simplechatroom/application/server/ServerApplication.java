@@ -93,6 +93,40 @@ public class ServerApplication extends Application {
     @Override
     public void processCommand(String[] commandArray) {
 
+        String commandUsageString = "";
+
+        String commandName = commandArray[0];
+        switch(commandName) {
+            case "list" -> {
+                commandUsageString = "list [clients]";
+
+                if (commandArray.length < 2) {
+                    break;
+                }
+
+                String listType = commandArray[1];
+                switch (listType) {
+                    case "clients" -> {
+                        StringBuilder clientsString = new StringBuilder();
+
+                        for (ClientInformation clientInformation : CLIENTS.values()) {
+
+                            clientsString.append(" - ")
+                                    .append(clientInformation.toString())
+                                    .append("\n");
+
+                        }
+
+                        Main.getLogger().info("Clients: [\n" + clientsString + "]");
+                        return;
+                    }
+                }
+
+            }
+        }
+
+        Main.getLogger().info("Incorrect usage of \"list\"!\nUse as follows: " + commandUsageString);
+
     }
 
     // called on main thread when client socket could no longer be read from

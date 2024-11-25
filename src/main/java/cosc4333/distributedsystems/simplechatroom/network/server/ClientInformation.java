@@ -5,6 +5,7 @@ import cosc4333.distributedsystems.simplechatroom.application.server.ServerOutpu
 
 import java.net.Socket;
 
+// generic class to hold information of a specific client
 public class ClientInformation {
 
     private final Socket SOCKET;
@@ -27,5 +28,10 @@ public class ClientInformation {
 
     public ServerOutputRunnable getOutputRunnable() {
         return OUTPUT_RUNNABLE;
+    }
+
+    @Override
+    public String toString() {
+        return "client information: { socket: " + getSocket() + " }";
     }
 }
