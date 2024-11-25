@@ -6,6 +6,7 @@ import cosc4333.distributedsystems.simplechatroom.network.server.ClientInformati
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerApplication extends Application {
@@ -37,12 +38,27 @@ public class ServerApplication extends Application {
         SERVER_CONNECTIONS_RUNNABLE = new ServerConnectionsRunnable(this, SERVER_SOCKET);
         SERVER_CONNECTIONS_THREAD = new Thread(SERVER_CONNECTIONS_RUNNABLE);
         SERVER_CONNECTIONS_THREAD.setName("Server-Network");
-        SERVER_CONNECTIONS_THREAD.start();
+
+    }
+
+    public void removeClientInformation(int clientPort) {
+        CLIENTS.remove(clientPort);
+    }
+
+    public void setClient(int clientPort, ClientInformation clientInformation) {
+        CLIENTS.put(clientPort, clientInformation);
+    }
+
+    public ClientInformation getClient(int clientPort) {
+        return CLIENTS.get(clientPort);
+    }
+
+    public ConcurrentHashMap<Integer, ClientInformation> getClients() {
+        return CLIENTS;
     }
 
     @Override
     protected void loop() {
-
 
 
     }
@@ -68,7 +84,8 @@ public class ServerApplication extends Application {
     @Override
     protected void onApplicationStarted() {
 
-
+        SERVER_CONNECTIONS_THREAD.start();
+        Main.getLogger().info("Started server!");
 
 
     }
@@ -77,4 +94,15 @@ public class ServerApplication extends Application {
     public void processCommand(String[] commandArray) {
 
     }
+
+    // called on main thread when client socket could no longer be read from
+    // MUST BE CALLED ON MAIN THREAD
+    protected void onClientDisconnected(Socket clientSocket) {
+
+        SERVER_CONNECTIONS_RUNNABLE.onClientDisconnected(clientSocket);
+        Main.getLogger().info("Client disconnected: " + clientSocket);
+
+    }
+
+
 }

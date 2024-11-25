@@ -17,7 +17,6 @@ public class ClientApplication extends Application {
         CLIENT_CONNECTION_RUNNABLE = new ClientConnectionRunnable(ip, Integer.parseInt(port));
         CLIENT_CONNECTION_THREAD = new Thread(CLIENT_CONNECTION_RUNNABLE);
         CLIENT_CONNECTION_THREAD.setName("Client-Network");
-        CLIENT_CONNECTION_THREAD.start();
 
 
     }
@@ -34,6 +33,9 @@ public class ClientApplication extends Application {
 
     @Override
     protected void onApplicationStarted() {
+
+        CLIENT_CONNECTION_THREAD.start();
+        Main.getLogger().info("Started client!");
 
     }
 
