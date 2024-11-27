@@ -107,4 +107,9 @@ public abstract class Application {
 
 
     }
+
+
+    public boolean isServer() {
+        return this instanceof ServerApplication;
+    }
 }

@@ -19,9 +19,10 @@ public class CommandProcessingRunnable implements Runnable {
     private void processCommand(String command) {
 
         LinkedList<String> commandParameters = new LinkedList<>();
+
         Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(command);
         while (m.find()) {
-            commandParameters.add(m.group(1));
+            commandParameters.add(m.group(1).replaceAll("\"", ""));
         }
 
         if (commandParameters.isEmpty()) return;

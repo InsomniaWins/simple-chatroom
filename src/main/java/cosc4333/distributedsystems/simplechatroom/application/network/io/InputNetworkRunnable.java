@@ -65,7 +65,7 @@ public class InputNetworkRunnable extends NetworkRunnable {
                     char currentChar = input.charAt(i + 1);
 
                     if (currentChar == ']') {
-                        packetData = input.substring(currentChar);
+                        packetData = input.substring(i + 2);
                         break;
                     }
 
@@ -119,7 +119,7 @@ public class InputNetworkRunnable extends NetworkRunnable {
                         return;
                     }
 
-                    packet.execute();
+                    packet.execute(SOCKET);
 
                 }
             }

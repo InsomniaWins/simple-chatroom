@@ -2,8 +2,11 @@ package cosc4333.distributedsystems.simplechatroom.application.client;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.Application;
+import cosc4333.distributedsystems.simplechatroom.application.chatroom.ChatRoom;
 import cosc4333.distributedsystems.simplechatroom.application.network.client.ServerInformation;
 import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.JoinRoomPacket;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.LeaveRoomPacket;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.MessagePacket;
 
 import java.net.Socket;
 import java.util.LinkedList;
@@ -62,6 +65,14 @@ public class ClientApplication extends Application {
 
     }
 
+    // called before serverInformation is thrown away, but after server socket has closed
+    // MUST BE CALLED ON MAIN THREAD
+    protected void onDisconnectedFromServer() {
+
+        serverInformation = null;
+
+    }
+
     // thread-safe :)
     public void disconnectFromServer() {
 
@@ -84,6 +95,52 @@ public class ClientApplication extends Application {
         String commandUsageString = "";
 
         switch (commandName) {
+
+            case "send" -> {
+
+                commandUsageString = "send \"message in quotes\"";
+
+                if (commandParameters.isEmpty()) {
+                    break;
+                }
+
+                String message = commandParameters.poll();
+
+                if (serverInformation == null) {
+                    Main.getLogger().info("Could not send message, because you are not connected to a server!");
+                    return;
+                }
+
+                if (serverInformation.getConnectedChatRoom() == null) {
+                    Main.getLogger().info("Could not send message, because you have not joined a chat room!");
+                    return;
+                }
+
+                serverInformation.getOutputRunnable().queuePacket(new MessagePacket(message));
+                return;
+            }
+
+            case "leave" -> {
+
+                commandUsageString = "leave";
+
+                if (serverInformation == null) {
+                    Main.getLogger().info("Could not leave room, because you are not connected to a server!");
+                    return;
+                }
+
+                ChatRoom chatRoom = serverInformation.getConnectedChatRoom();
+                if (chatRoom == null) {
+                    Main.getLogger().info("Could not leave room, because you have not joined a chat room!");
+                    return;
+                }
+
+
+                serverInformation.getOutputRunnable().queuePacket(new LeaveRoomPacket());
+
+                return;
+
+            }
 
             case "join" -> {
 
@@ -121,9 +178,15 @@ public class ClientApplication extends Application {
                 return;
 
             }
+
         }
 
-        Main.getLogger().info("Incorrect usage of \"list\"!\nUse as follows: " + commandUsageString);
+        if (commandUsageString.isEmpty()) {
+            Main.getLogger().info("Unknown command: \"" + commandName + "\"");
+            return;
+        }
+
+        Main.getLogger().info("Incorrect usage of \"" + commandName + "\"!\nUse as follows: " + commandUsageString);
     }
 
     // thread-safe :)
@@ -150,12 +213,6 @@ public class ClientApplication extends Application {
 
         CLIENT_CONNECTION_RUNNABLE.onServerDisconnected(socket);
         Main.getLogger().info("Server disconnected: " + socket);
-
-    }
-
-    public void sendMessageToServer(String message) {
-
-        serverInformation.getOutputRunnable().queueMessage(message);
 
     }
 }

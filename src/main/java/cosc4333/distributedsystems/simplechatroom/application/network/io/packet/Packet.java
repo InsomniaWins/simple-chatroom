@@ -3,6 +3,8 @@ package cosc4333.distributedsystems.simplechatroom.application.network.io.packet
 
 import cosc4333.distributedsystems.simplechatroom.Main;
 
+import java.net.Socket;
+
 public abstract class Packet {
 
     public abstract String serialize();
@@ -15,7 +17,7 @@ public abstract class Packet {
                     // . . . some code . . .
                 });
      */
-    public abstract void execute();
+    public abstract void execute(Socket senderSocket);
 
     public static String getSerializedPacketPrefix(Packet packet) {
         return "[packet=" + packet.getClass().getName() + "]";

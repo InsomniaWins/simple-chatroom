@@ -68,7 +68,12 @@ public class ClientConnectionRunnable implements Runnable {
             outputRunnable.stop();
         }
 
-        Main.getLogger().info("Disconnected from server!");
+        Main.getApplication().queueMainThreadInstruction(() -> {
+            CLIENT_APPLICATION.onDisconnectedFromServer();
+            Main.getLogger().info("Disconnected from server!");
+        });
+
+
 
     }
 

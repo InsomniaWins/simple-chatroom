@@ -2,13 +2,18 @@ package cosc4333.distributedsystems.simplechatroom.application.server;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.Application;
+import cosc4333.distributedsystems.simplechatroom.application.chatroom.ChatRoom;
+import cosc4333.distributedsystems.simplechatroom.application.chatroom.ChatRoomManager;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.InputNetworkRunnable;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.OutputNetworkRunnable;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.Packet;
 import cosc4333.distributedsystems.simplechatroom.application.network.server.ClientInformation;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerApplication extends Application {
@@ -17,6 +22,7 @@ public class ServerApplication extends Application {
     private final Thread SERVER_CONNECTIONS_THREAD;
     private final ServerConnectionsRunnable SERVER_CONNECTIONS_RUNNABLE;
     private final ServerSocket SERVER_SOCKET;
+    private final ChatRoomManager CHAT_ROOM_MANAGER = new ChatRoomManager();
 
     public ServerApplication(String port) {
 
@@ -127,7 +133,12 @@ public class ServerApplication extends Application {
             }
         }
 
-        Main.getLogger().info("Incorrect usage of \"list\"!\nUse as follows: " + commandUsageString);
+        if (commandUsageString.isEmpty()) {
+            Main.getLogger().info("Unknown command: \"" + commandName + "\"");
+            return;
+        }
+
+        Main.getLogger().info("Incorrect usage of \"" + commandName + "\"!\nUse as follows: " + commandUsageString);
 
     }
 
@@ -138,4 +149,24 @@ public class ServerApplication extends Application {
         Main.getLogger().info("Client disconnected: " + socket);
 
     }
+
+    // thread-safe :)
+    public ChatRoomManager getChatRoomManager() {
+        return CHAT_ROOM_MANAGER;
+    }
+
+
+    public void queuePacket(Packet packet, Socket receiverSocket) {
+
+        ClientInformation clientInformation = getClient(receiverSocket.getPort());
+
+        // if client does not exist or is not connected
+        if (clientInformation == null) {
+            return;
+        }
+
+        OutputNetworkRunnable outputRunnable = clientInformation.getOutputRunnable();
+        outputRunnable.queuePacket(packet);
+    }
+
 }

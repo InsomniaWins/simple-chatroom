@@ -14,61 +14,29 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JoinRoomPacket extends Packet {
+public class LeaveRoomPacket extends Packet {
 
 
-    public String roomName = "";
-
-    public JoinRoomPacket(String roomName) {
-        this.roomName = roomName;
-    }
-
-    public static JoinRoomPacket deserialize(String data) {
-
-        LinkedList<String> dataList = new LinkedList<>();
-        Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(data);
-        while (m.find()) {
-            dataList.add(m.group(1).replaceAll("\"", ""));
-        }
-
-        String roomName = null;
-
-        while (!dataList.isEmpty()) {
-            String field = dataList.poll();
-            String value = dataList.poll();
-
-            if (field.equals("roomName")) {
-                roomName = value;
-            }
-        }
-
-        return new JoinRoomPacket(roomName);
+    public static LeaveRoomPacket deserialize(String data) {
+        return new LeaveRoomPacket();
     }
 
     @Override
     public String serialize() {
-        return "roomName \"" + roomName + "\"";
+        return "";
     }
 
     // called on client after server adds the client to a chat room
     private void executeOnClient(Socket serverSocket) {
 
         ClientApplication client = (ClientApplication) Main.getApplication();
+        ServerInformation serverInformation = client.getServerInformation();
 
-        client.queueMainThreadInstruction(() -> {
+        if (serverInformation == null) return;
 
-            Main.getLogger().info("You have joined room: " + roomName + "!");
-            ServerInformation serverInformation =  client.getServerInformation();
+        serverInformation.setConnectedChatRoom(null);
 
-            if (serverInformation == null) {
-                Main.getLogger().severe("Failed to access server information when joining room!");
-                return;
-            }
-
-            serverInformation.setConnectedChatRoom(new ChatRoom(roomName));
-
-        });
-
+        System.out.println("You have left the room.");
 
     }
 
@@ -78,16 +46,19 @@ public class JoinRoomPacket extends Packet {
         ServerApplication server = (ServerApplication) Main.getApplication();
 
         server.queueMainThreadInstruction(() -> {
-            ChatRoomManager roomManager = server.getChatRoomManager();
-
-            ChatRoom chatRoom = roomManager.getOrCreateChatRoom(roomName);
-            chatRoom.connectSocket(clientsocket);
 
             ClientInformation clientInformation = server.getClient(clientsocket.getPort());
-            clientInformation.setConnectedChatRoom(chatRoom);
+
+            if (clientInformation == null) return;
+
+            ChatRoom chatRoom = clientInformation.getConnectedChatRoom();
+
+            if (chatRoom == null) return;
+
+            chatRoom.disconnectSocket(clientsocket);
+            clientInformation.setConnectedChatRoom(null);
 
             server.queuePacket(this, clientsocket);
-
         });
 
     }
