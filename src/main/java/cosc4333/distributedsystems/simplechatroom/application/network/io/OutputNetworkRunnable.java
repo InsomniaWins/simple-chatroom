@@ -2,6 +2,7 @@ package cosc4333.distributedsystems.simplechatroom.application.network.io;
 
 import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.network.NetworkRunnable;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.Packet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -52,6 +53,15 @@ public class OutputNetworkRunnable extends NetworkRunnable {
     public void queueMessage(String message) {
 
         OUTPUT_QUEUE.offer(message);
+
+    }
+
+    // queues a packet to be sent to the socket
+    // thread-safe :)
+    public void queuePacket(Packet packet) {
+
+        String packetData = packet.serialize();
+        queueMessage(Packet.getSerializedPacketPrefix(packet) + packetData);
 
     }
 }

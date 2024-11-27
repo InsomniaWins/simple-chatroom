@@ -4,8 +4,10 @@ import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.client.ClientApplication;
 import cosc4333.distributedsystems.simplechatroom.application.server.ServerApplication;
 
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommandProcessingRunnable implements Runnable {
 
@@ -16,23 +18,31 @@ public class CommandProcessingRunnable implements Runnable {
     // RUN ON COMMAND THREAD
     private void processCommand(String command) {
 
-        String[] commandArray = command.split(" ");
-        String commandName = commandArray[0];
+        LinkedList<String> commandParameters = new LinkedList<>();
+        Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(command);
+        while (m.find()) {
+            commandParameters.add(m.group(1));
+        }
+
+        if (commandParameters.isEmpty()) return;
+
+        String commandName = commandParameters.poll();
 
         switch (commandName) {
             case "stop", "close", "quit", "exit" -> {
                 stop();
                 Main.getApplication().stop();
             }
+
             default -> {
 
                 if (Main.getApplication() instanceof ClientApplication clientApplication) {
 
-                    clientApplication.processCommand(commandArray);
+                    clientApplication.processCommand(commandName, commandParameters);
 
                 } else if (Main.getApplication() instanceof ServerApplication serverApplication) {
 
-                    serverApplication.processCommand(commandArray);
+                    serverApplication.processCommand(commandName, commandParameters);
 
                 }
 

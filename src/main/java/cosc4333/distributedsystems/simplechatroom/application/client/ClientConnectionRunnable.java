@@ -104,6 +104,7 @@ public class ClientConnectionRunnable implements Runnable {
 
         serverThreadPool.submit(outputRunnable);
         serverThreadPool.submit(inputRunnable);
+
     }
 
     public boolean isRunning() {

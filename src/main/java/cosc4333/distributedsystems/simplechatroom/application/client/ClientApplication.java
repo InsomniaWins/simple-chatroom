@@ -3,8 +3,12 @@ package cosc4333.distributedsystems.simplechatroom.application.client;
 import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.Application;
 import cosc4333.distributedsystems.simplechatroom.application.network.client.ServerInformation;
+import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.JoinRoomPacket;
 
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 public class ClientApplication extends Application {
 
@@ -47,6 +51,7 @@ public class ClientApplication extends Application {
         // if on client network thread, attempt connection
         if (Thread.currentThread() == CLIENT_CONNECTION_THREAD) {
             CLIENT_CONNECTION_RUNNABLE.attemptConnection();
+
         }
         // else, tell client network thread to attempt connection
         else {
@@ -74,22 +79,51 @@ public class ClientApplication extends Application {
     }
 
     @Override
-    public void processCommand(String[] commandArray) {
-        String commandName = commandArray[0];
+    public void processCommand(String commandName, LinkedList<String> commandParameters) {
+
+        String commandUsageString = "";
 
         switch (commandName) {
+
+            case "join" -> {
+
+                commandUsageString = "join \"room name in quotes\"";
+
+                if (commandParameters.isEmpty()) {
+                    break;
+                }
+
+                String roomName = commandParameters.poll();
+
+                if (serverInformation != null) {
+
+                    JoinRoomPacket packet = new JoinRoomPacket(roomName);
+                    serverInformation.getOutputRunnable().queuePacket(packet);
+
+                } else {
+                    Main.getLogger().info("Could not join room, because you are not connected to a server!");
+                }
+
+
+                return;
+            }
+
             case "connect" -> {
 
                 attemptConnectToServer();
+                return;
 
             }
 
             case "disconnect" -> {
 
                 disconnectFromServer();
+                return;
 
             }
         }
+
+        Main.getLogger().info("Incorrect usage of \"list\"!\nUse as follows: " + commandUsageString);
     }
 
     // thread-safe :)
@@ -100,7 +134,7 @@ public class ClientApplication extends Application {
     // NOT THREAD SAFE (yet)
     public boolean isClientConnected() {
         Socket clientSocket = CLIENT_CONNECTION_RUNNABLE.getServerSocket();
-        return clientSocket != null && clientSocket.isConnected() && !clientSocket.isClosed();
+        return clientSocket != null && clientSocket.isConnected() && !clientSocket.isClosed() && serverInformation != null;
     }
 
     public ServerInformation getServerInformation() {
@@ -116,6 +150,12 @@ public class ClientApplication extends Application {
 
         CLIENT_CONNECTION_RUNNABLE.onServerDisconnected(socket);
         Main.getLogger().info("Server disconnected: " + socket);
+
+    }
+
+    public void sendMessageToServer(String message) {
+
+        serverInformation.getOutputRunnable().queueMessage(message);
 
     }
 }

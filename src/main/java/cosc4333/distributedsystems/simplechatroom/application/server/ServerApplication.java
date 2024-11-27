@@ -7,6 +7,8 @@ import cosc4333.distributedsystems.simplechatroom.application.network.server.Cli
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerApplication extends Application {
@@ -91,20 +93,20 @@ public class ServerApplication extends Application {
     }
 
     @Override
-    public void processCommand(String[] commandArray) {
+    public void processCommand(String commandName, LinkedList<String> commandParameters) {
 
         String commandUsageString = "";
 
-        String commandName = commandArray[0];
         switch(commandName) {
             case "list" -> {
                 commandUsageString = "list [clients]";
 
-                if (commandArray.length < 2) {
+                if (commandParameters.isEmpty()) {
                     break;
                 }
 
-                String listType = commandArray[1];
+                String listType = commandParameters.poll();
+
                 switch (listType) {
                     case "clients" -> {
                         StringBuilder clientsString = new StringBuilder();

@@ -5,6 +5,8 @@ import cosc4333.distributedsystems.simplechatroom.application.server.ServerAppli
 
 import java.net.Socket;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +30,7 @@ public abstract class Application {
 
     // processes a user-inputted command
     // MUST CALL ON COMMAND THREAD
-    public abstract void processCommand(String[] commandArray);
+    public abstract void processCommand(String commandName, LinkedList<String> commandParameters);
 
     public Application() {
 
