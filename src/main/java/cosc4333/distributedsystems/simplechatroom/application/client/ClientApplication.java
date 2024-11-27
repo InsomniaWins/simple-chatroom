@@ -7,6 +7,7 @@ import cosc4333.distributedsystems.simplechatroom.application.network.client.Ser
 import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.JoinRoomPacket;
 import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.LeaveRoomPacket;
 import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.MessagePacket;
+import cosc4333.distributedsystems.simplechatroom.application.util.Command;
 
 import java.net.Socket;
 import java.util.LinkedList;
@@ -27,6 +28,88 @@ public class ClientApplication extends Application {
         CLIENT_CONNECTION_RUNNABLE = new ClientConnectionRunnable(this, ip, Integer.parseInt(port));
         CLIENT_CONNECTION_THREAD = new Thread(CLIENT_CONNECTION_RUNNABLE);
         CLIENT_CONNECTION_THREAD.setName("Client-Network");
+
+        COMMAND_MAP.put("connect", new Command(
+                "connect",
+                "connects to the server",
+                (List<String> commandParameters) -> {
+                    attemptConnectToServer();
+                    return Command.SUCCESS;
+                })
+        );
+        COMMAND_MAP.put("disconnect", new Command(
+                "disconnect",
+                "disconnects from the server",
+                (List<String> commandParameters) -> {
+                    disconnectFromServer();
+                    return Command.SUCCESS;
+                })
+        );
+        COMMAND_MAP.put("join", new Command(
+                "join \"room name in quotation marks\"",
+                "joins a chat room",
+                (List<String> commandParameters) -> {
+
+                    if (commandParameters.isEmpty()) {
+                        return Command.IMPROPER_USAGE;
+                    }
+
+                    String roomName = commandParameters.getFirst();
+
+                    if (serverInformation == null) {
+                        Main.getLogger().info("Could not join room, because you are not connected to a server!");
+                        return Command.SUCCESS;
+                    }
+
+                    JoinRoomPacket packet = new JoinRoomPacket(roomName);
+                    serverInformation.getOutputRunnable().queuePacket(packet);
+                    return Command.SUCCESS;
+                })
+        );
+        COMMAND_MAP.put("leave", new Command(
+                "leave",
+                "leaves the chat room",
+                (List<String> commandParameters) -> {
+                    if (serverInformation == null) {
+                        Main.getLogger().info("Could not leave room, because you are not connected to a server!");
+                        return Command.SUCCESS;
+                    }
+
+                    ChatRoom chatRoom = serverInformation.getConnectedChatRoom();
+                    if (chatRoom == null) {
+                        Main.getLogger().info("Could not leave room, because you have not joined a chat room!");
+                        return Command.SUCCESS;
+                    }
+
+                    serverInformation.getOutputRunnable().queuePacket(new LeaveRoomPacket());
+                    return Command.SUCCESS;
+                })
+        );
+        COMMAND_MAP.put("send", new Command(
+                "send \"message in quotation marks\"",
+                "sends a message to the chat room",
+                (List<String> commandParameters) -> {
+
+                    if (commandParameters.isEmpty()) {
+                        return Command.IMPROPER_USAGE;
+                    }
+
+                    String message = commandParameters.getFirst();
+
+                    if (serverInformation == null) {
+                        Main.getLogger().info("Could not send message, because you are not connected to a server!");
+                        return Command.SUCCESS;
+                    }
+
+                    if (serverInformation.getConnectedChatRoom() == null) {
+                        Main.getLogger().info("Could not send message, because you have not joined a chat room!");
+                        return Command.SUCCESS;
+                    }
+
+                    serverInformation.getOutputRunnable().queuePacket(new MessagePacket(message));
+                    return Command.SUCCESS;
+                })
+        );
 
     }
 
@@ -87,106 +170,6 @@ public class ClientApplication extends Application {
 
         }
 
-    }
-
-    @Override
-    public void processCommand(String commandName, LinkedList<String> commandParameters) {
-
-        String commandUsageString = "";
-
-        switch (commandName) {
-
-            case "send" -> {
-
-                commandUsageString = "send \"message in quotes\"";
-
-                if (commandParameters.isEmpty()) {
-                    break;
-                }
-
-                String message = commandParameters.poll();
-
-                if (serverInformation == null) {
-                    Main.getLogger().info("Could not send message, because you are not connected to a server!");
-                    return;
-                }
-
-                if (serverInformation.getConnectedChatRoom() == null) {
-                    Main.getLogger().info("Could not send message, because you have not joined a chat room!");
-                    return;
-                }
-
-                serverInformation.getOutputRunnable().queuePacket(new MessagePacket(message));
-                return;
-            }
-
-            case "leave" -> {
-
-                commandUsageString = "leave";
-
-                if (serverInformation == null) {
-                    Main.getLogger().info("Could not leave room, because you are not connected to a server!");
-                    return;
-                }
-
-                ChatRoom chatRoom = serverInformation.getConnectedChatRoom();
-                if (chatRoom == null) {
-                    Main.getLogger().info("Could not leave room, because you have not joined a chat room!");
-                    return;
-                }
-
-
-                serverInformation.getOutputRunnable().queuePacket(new LeaveRoomPacket());
-
-                return;
-
-            }
-
-            case "join" -> {
-
-                commandUsageString = "join \"room name in quotes\"";
-
-                if (commandParameters.isEmpty()) {
-                    break;
-                }
-
-                String roomName = commandParameters.poll();
-
-                if (serverInformation != null) {
-
-                    JoinRoomPacket packet = new JoinRoomPacket(roomName);
-                    serverInformation.getOutputRunnable().queuePacket(packet);
-
-                } else {
-                    Main.getLogger().info("Could not join room, because you are not connected to a server!");
-                }
-
-
-                return;
-            }
-
-            case "connect" -> {
-
-                attemptConnectToServer();
-                return;
-
-            }
-
-            case "disconnect" -> {
-
-                disconnectFromServer();
-                return;
-
-            }
-
-        }
-
-        if (commandUsageString.isEmpty()) {
-            Main.getLogger().info("Unknown command: \"" + commandName + "\"");
-            return;
-        }
-
-        Main.getLogger().info("Incorrect usage of \"" + commandName + "\"!\nUse as follows: " + commandUsageString);
     }
 
     // thread-safe :)

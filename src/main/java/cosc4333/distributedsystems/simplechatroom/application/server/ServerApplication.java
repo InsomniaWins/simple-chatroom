@@ -8,12 +8,14 @@ import cosc4333.distributedsystems.simplechatroom.application.network.io.InputNe
 import cosc4333.distributedsystems.simplechatroom.application.network.io.OutputNetworkRunnable;
 import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.Packet;
 import cosc4333.distributedsystems.simplechatroom.application.network.server.ClientInformation;
+import cosc4333.distributedsystems.simplechatroom.application.util.Command;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerApplication extends Application {
@@ -41,12 +43,43 @@ public class ServerApplication extends Application {
 
         CLIENTS = new ConcurrentHashMap<>();
 
+
+        COMMAND_MAP.put("list", new Command(
+                "list [clients]",
+                "lists information about the server (currently only supports listing clients)",
+                (List<String> commandParameters) -> {
+
+                    if (commandParameters.isEmpty()) {
+                        return Command.IMPROPER_USAGE;
+                    }
+
+                    String listType = commandParameters.getFirst();
+
+                    switch (listType) {
+                        case "clients" -> {
+                            StringBuilder clientsString = new StringBuilder();
+
+                            for (ClientInformation clientInformation : CLIENTS.values()) {
+
+                                clientsString.append(" - ")
+                                        .append(clientInformation.toString())
+                                        .append("\n");
+
+                            }
+
+                            Main.getLogger().info("Clients: [\n" + clientsString + "]");
+                        }
+                    }
+
+                    return Command.SUCCESS;
+                })
+        );
+
         // begin thread which handles connections to server
         // on separate thread to prevent blocking the main thread when waiting for connections
         SERVER_CONNECTIONS_RUNNABLE = new ServerConnectionsRunnable(this, SERVER_SOCKET);
         SERVER_CONNECTIONS_THREAD = new Thread(SERVER_CONNECTIONS_RUNNABLE);
         SERVER_CONNECTIONS_THREAD.setName("Server-Network");
-
     }
 
     public void removeClientInformation(int clientPort) {
@@ -95,50 +128,6 @@ public class ServerApplication extends Application {
         SERVER_CONNECTIONS_THREAD.start();
         Main.getLogger().info("Started server!");
 
-
-    }
-
-    @Override
-    public void processCommand(String commandName, LinkedList<String> commandParameters) {
-
-        String commandUsageString = "";
-
-        switch(commandName) {
-            case "list" -> {
-                commandUsageString = "list [clients]";
-
-                if (commandParameters.isEmpty()) {
-                    break;
-                }
-
-                String listType = commandParameters.poll();
-
-                switch (listType) {
-                    case "clients" -> {
-                        StringBuilder clientsString = new StringBuilder();
-
-                        for (ClientInformation clientInformation : CLIENTS.values()) {
-
-                            clientsString.append(" - ")
-                                    .append(clientInformation.toString())
-                                    .append("\n");
-
-                        }
-
-                        Main.getLogger().info("Clients: [\n" + clientsString + "]");
-                        return;
-                    }
-                }
-
-            }
-        }
-
-        if (commandUsageString.isEmpty()) {
-            Main.getLogger().info("Unknown command: \"" + commandName + "\"");
-            return;
-        }
-
-        Main.getLogger().info("Incorrect usage of \"" + commandName + "\"!\nUse as follows: " + commandUsageString);
 
     }
 

@@ -29,27 +29,15 @@ public class CommandProcessingRunnable implements Runnable {
 
         String commandName = commandParameters.poll();
 
-        switch (commandName) {
-            case "stop", "close", "quit", "exit" -> {
-                stop();
-                Main.getApplication().stop();
-            }
+        if (Main.getApplication() instanceof ClientApplication clientApplication) {
 
-            default -> {
+            clientApplication.processCommand(commandName, commandParameters);
 
-                if (Main.getApplication() instanceof ClientApplication clientApplication) {
+        } else if (Main.getApplication() instanceof ServerApplication serverApplication) {
 
-                    clientApplication.processCommand(commandName, commandParameters);
+            serverApplication.processCommand(commandName, commandParameters);
 
-                } else if (Main.getApplication() instanceof ServerApplication serverApplication) {
-
-                    serverApplication.processCommand(commandName, commandParameters);
-
-                }
-
-            }
         }
-
     }
 
     public boolean isRunning() {
