@@ -159,15 +159,18 @@ public class ClientApplication extends Application {
     // thread-safe :)
     public void disconnectFromServer() {
 
+        if (!isClientConnected()) {
+            Main.getLogger().info("Cannot disconnect from server, because you are not connected to a server!");
+            return;
+        }
+
         // if on client network thread, disconnect
         if (Thread.currentThread() == CLIENT_CONNECTION_THREAD) {
             CLIENT_CONNECTION_RUNNABLE.disconnect();
         }
         // else, tell client network thread to disconnect
         else {
-
             queueClientConnectionThreadInstruction(CLIENT_CONNECTION_RUNNABLE::disconnect);
-
         }
 
     }

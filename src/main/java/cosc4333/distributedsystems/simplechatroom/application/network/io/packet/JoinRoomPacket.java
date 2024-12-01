@@ -65,7 +65,7 @@ public class JoinRoomPacket extends Packet {
                 return;
             }
 
-            serverInformation.setConnectedChatRoom(new ChatRoom(roomName));
+            serverInformation.setConnectedChatRoom(new ChatRoom(roomName, null));
 
         });
 

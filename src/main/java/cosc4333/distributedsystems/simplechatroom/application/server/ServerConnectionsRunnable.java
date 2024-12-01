@@ -68,9 +68,6 @@ public class ServerConnectionsRunnable implements Runnable {
                     Main.getLogger().info("Server is no longer listening for connections.");
                 }
 
-
-                continue;
-
             }
 
         }

@@ -1,6 +1,6 @@
 package cosc4333.distributedsystems.simplechatroom.application.chatroom;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatRoomManager {
@@ -10,6 +10,11 @@ public class ChatRoomManager {
 
     public ChatRoomManager() {
 
+    }
+
+    // thread-safe :)
+    public Collection<ChatRoom> getChatRooms() {
+        return CHAT_ROOMS.values();
     }
 
     // thread-safe :)
@@ -37,7 +42,7 @@ public class ChatRoomManager {
         }
 
         // create new chat room and add to map
-        chatRoom = new ChatRoom(roomName);
+        chatRoom = new ChatRoom(roomName, this);
         CHAT_ROOMS.put(roomName, chatRoom);
 
         // return chat room

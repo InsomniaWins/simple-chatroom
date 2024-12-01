@@ -4,17 +4,13 @@ import cosc4333.distributedsystems.simplechatroom.Main;
 import cosc4333.distributedsystems.simplechatroom.application.Application;
 import cosc4333.distributedsystems.simplechatroom.application.chatroom.ChatRoom;
 import cosc4333.distributedsystems.simplechatroom.application.chatroom.ChatRoomManager;
-import cosc4333.distributedsystems.simplechatroom.application.network.io.InputNetworkRunnable;
 import cosc4333.distributedsystems.simplechatroom.application.network.io.OutputNetworkRunnable;
 import cosc4333.distributedsystems.simplechatroom.application.network.io.packet.Packet;
 import cosc4333.distributedsystems.simplechatroom.application.network.server.ClientInformation;
 import cosc4333.distributedsystems.simplechatroom.application.util.Command;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,7 +41,7 @@ public class ServerApplication extends Application {
 
 
         COMMAND_MAP.put("list", new Command(
-                "list [clients]",
+                "list [clients/rooms]",
                 "lists information about the server (currently only supports listing clients)",
                 (List<String> commandParameters) -> {
 
@@ -68,6 +64,30 @@ public class ServerApplication extends Application {
                             }
 
                             Main.getLogger().info("Clients: [\n" + clientsString + "]");
+                        }
+
+                        case "rooms" -> {
+
+                            StringBuilder chatRoomsString = new StringBuilder();
+
+                            for (ChatRoom chatRoom : CHAT_ROOM_MANAGER.getChatRooms()) {
+
+                                chatRoomsString.append(" - ")
+                                        .append(chatRoom.getName())
+                                        .append(" {");
+
+                                for (Socket clientSocket : chatRoom.getConnectedSockets()) {
+
+                                    chatRoomsString.append(clientSocket).append(", ");
+
+                                }
+
+                                chatRoomsString.append("}\n");
+
+                            }
+
+                            Main.getLogger().info("Chat Rooms: [\n" + chatRoomsString + "]");
+
                         }
                     }
 
